@@ -29,20 +29,20 @@ export default function Home() {
     }
     setLoading(true);
     try {
+      // warm up model in background while uploading
       const candidate = await createCandidate(name, email);
-      await uploadResume(candidate.id, file);
+      await Promise.all([
+        uploadResume(candidate.id, file),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/v1/health`),
+      ]);
       toast.success("Resume uploaded successfully!");
       localStorage.setItem("candidate", JSON.stringify(candidate));
       navigate("/match", { state: { candidateId: candidate.id } });
     } catch (err) {
       const msg = err.response?.data?.detail || "Something went wrong.";
-      if (msg.includes("already exists")) {
-        toast.error(
-          "This email is already registered. Please use a different email.",
-        );
-      } else {
-        toast.error(msg);
-      }
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
