@@ -36,9 +36,13 @@ export default function Home() {
       navigate("/match", { state: { candidateId: candidate.id } });
     } catch (err) {
       const msg = err.response?.data?.detail || "Something went wrong.";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
+      if (msg.includes("already exists")) {
+        toast.error(
+          "This email is already registered. Please use a different email.",
+        );
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
